@@ -73,3 +73,9 @@ Returns an object containing
 - `correct` *(string[] | string, optional)*: a string or array of strings representing correct the answer(s) to the question.
 - `answer` *(string, optional)*: text to display once the question has been answered.
 - `choices` *({answer: string; label: string}[], optional)*: an array of all possible answer choices for a multiple choice question.
+
+## use-purchased-bundle.tsx
+
+### usePurchasedBundle(bundles: SellableResource[]): SellableResource | undefined
+
+Grabs the user's sitePurchases and authToken from the `useViewer()` context hook. Searches the bundles argument for the bundle that the user has purchased (if one has been purchased) and fetches data about that bundle. This bundle data is returned if the user has a defined authToken and has purchased a bundle with a defined URL. Returns undefined otherwise.
