@@ -1,5 +1,28 @@
 # Documenting SkillRecordings Next Starter Hooks 
 
+## use-achievements.ts
+
+### useAchievements(purchasedBundle: any): Achievement[] | any
+
+Uses `useBundleProgress` hook to fetch bundle progress data for `purchasedBundle` object. Filters out modules with no lessons, then maps modules to `true` if property state === 'completed' and to `false` otherwise. Uses this `completedArr` to determine which Achievements have been earned by the user. 
+
+Returns an array of Achievement objects.
+
+### Achievement Object Properties
+- `title` *(string)*: title of achievement
+- `earned` *(boolean)*: true if achievement has been earned by the user, false otherwise. Conditions for earning each achievement outlined below.
+- `image` *(string)*: URL of Achievement image
+- `link` *(Object, optional)*
+  - `children` *(string)*: child of link element to be displayed.
+  - `onClick` *(Function () => void)*: onClick behavior of link element to be displayed.
+
+### Conditions for earning each Achievement
+- "Finish 1st Module": `completedArr[0] === true`
+- "Finish 3 Modules": `completedArr` contains at least 3 `true` elements. `completedArr.filter((i) => i === true).length >= 3`
+- "Finish 5 Modules": `completedArr` contains at least 5 `true` elements. `completedArr.filter((i) => i === true).length >= 5`
+- "Finish **all** modules": `completedArr.filter((i) => i === true).length >= 5`
+  - Is this intended? Or should we have `completedArr.filter((i) => i === true).length === completedArr.length`
+
 ## use-bundle-progress.tsx
 
 ### useBundleProgress(bundle: any): Object
@@ -29,28 +52,21 @@ Returns true if lesson (resource) object has property state === "completed"
 
 Exported indepently from `useBundleProgress`.
 
-## use-achievements.ts
+## use-cio.tsx
 
-### useAchievements(purchasedBundle: any): Achievement[] | any
+## use-commerce-machine.tsx
 
-Uses `useBundleProgress` hook to fetch bundle progress data for `purchasedBundle` object. Filters out modules with no lessons, then maps modules to `true` if property state === 'completed' and to `false` otherwise. Uses this `completedArr` to determine which Achievements have been earned by the user. 
+### useCommerceMachine({sellable: SellableResource, upgradeFromSellable: SellableResource})
 
-Returns an array of Achievement objects.
+Grabs the slug from the `sellable` argument and the userId from `useViewer`. Initially creates an XState commerce state machine from the `sellable` and `upgradeFromSellable` arguments, and only recreates this machine when `sellable`, `upgradeFromSellable`, userId, or the sellable slug changes. Returns a tuple of `[state, send, service]` for the commerce state machine given by the XState `useMachine()` hook. 
 
-### Achievement Object Properties
-- `title` *(string)*: title of achievement
-- `earned` *(boolean)*: true if achievement has been earned by the user, false otherwise. Conditions for earning each achievement outlined below.
-- `image` *(string)*: URL of Achievement image
-- `link` *(Object, optional)*
-  - `children` *(string)*: child of link element to be displayed.
-  - `onClick` *(Function () => void)*: onClick behavior of link element to be displayed.
+## use-convertkit.tsx
 
-### Conditions for earning each Achievement
-- "Finish 1st Module": `completedArr[0] === true`
-- "Finish 3 Modules": `completedArr` contains at least 3 `true` elements. `completedArr.filter((i) => i === true).length >= 3`
-- "Finish 5 Modules": `completedArr` contains at least 5 `true` elements. `completedArr.filter((i) => i === true).length >= 5`
-- "Finish **all** modules": `completedArr.filter((i) => i === true).length >= 5`
-  - Is this intended? Or should we have `completedArr.filter((i) => i === true).length === completedArr.length`
+## use-purchased-bundle.tsx
+
+### usePurchasedBundle(bundles: SellableResource[]): SellableResource | undefined
+
+Grabs the user's sitePurchases and authToken from the `useViewer()` context hook. Searches the bundles argument for the bundle that the user has purchased (if one has been purchased) and fetches data about that bundle. This bundle data is returned if the user has a defined authToken and has purchased a bundle with a defined URL. Returns undefined otherwise.
 
 ## use-quiz-question.ts
 
@@ -74,8 +90,20 @@ Returns an object containing
 - `answer` *(string, optional)*: text to display once the question has been answered.
 - `choices` *({answer: string; label: string}[], optional)*: an array of all possible answer choices for a multiple choice question.
 
-## use-purchased-bundle.tsx
+## use-redirect-unclaimed-bulk-to-invoice.tsx
 
-### usePurchasedBundle(bundles: SellableResource[]): SellableResource | undefined
+### useRedirectUnclaimedBulkToInvoice(): boolean
 
-Grabs the user's sitePurchases and authToken from the `useViewer()` context hook. Searches the bundles argument for the bundle that the user has purchased (if one has been purchased) and fetches data about that bundle. This bundle data is returned if the user has a defined authToken and has purchased a bundle with a defined URL. Returns undefined otherwise.
+The `useViewer` context determines if the user is an "unclaimed bulk purchaser": that is, the user has at least one bulk site purchase. If the user is an unclaimed bulk purchaser, and the `useLoginRequired()` hook has verified that the user is logged in, then the user is sent to the /invoice page.
+
+Returns the value of isVerifying, which is true while the `useLoginRequired()` hook is verifying that the user is logged in and while the user is an unclaimed bulk purchaser.
+
+## use-required-login.tsx
+
+### useLoginRequired(): boolean
+
+Attempts to fetch an access token from cookies or localstorage. If this token is null, sends user to login page.
+
+Returns the boolean value of isVerifying, which is true while there is no valid token stored (the user has not logged in). In other words, this value is true when the hook is still verifying that the user has access to the page.
+
+Login is disabled in development.
